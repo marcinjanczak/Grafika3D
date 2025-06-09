@@ -7,6 +7,9 @@ import javax.swing.*;
 public class Start {
     public static void main(String[] args) {
         System.out.printf("Aplikacja 3-D");
-        SwingUtilities.invokeLater(MainFrame::new);
+        SwingUtilities.invokeLater(() ->{
+            MainFrame frame = new MainFrame();
+            frame.setVisible(true);
+        });
     }
 }
