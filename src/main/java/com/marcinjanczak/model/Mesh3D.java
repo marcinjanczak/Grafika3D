@@ -5,15 +5,20 @@ import java.util.List;
 
 public class Mesh3D {
     private List<Vertex> vertices;
+    private List<Vertex> originalVertices;
     private List<Face> faces;
+    private Matrix4x4 transformationMatrix;
 
     public Mesh3D() {
         vertices = new ArrayList<>();
+        originalVertices = new ArrayList<>();
         faces = new ArrayList<>();
+        transformationMatrix = Matrix4x4.identity();
     }
 
     public void addVertex(Vertex v) {
         vertices.add(v);
+        originalVertices.add(new Vertex(v.x, v.y, v.z));
     }
 
     public void addFace(Face f) {
@@ -28,31 +33,24 @@ public class Mesh3D {
         return faces;
     }
 
-    public void translate(double tx, double ty, double tz) {
-        for (Vertex v : vertices) {
-            v.x += tx;
-            v.y += ty;
-            v.z += tz;
+    public void applyTransformation(Matrix4x4 matrix) {
+        transformationMatrix = matrix;
+        updateVertices();
+    }
+
+    public void resetTransformation() {
+        transformationMatrix = Matrix4x4.identity();
+        vertices.clear();
+        for (Vertex v : originalVertices) {
+            vertices.add(new Vertex(v.x, v.y, v.z));
         }
     }
 
-    public void rotateX(double angle) {
-        double cos = Math.cos(angle);
-        double sin = Math.sin(angle);
-
-        for (Vertex v : vertices) {
-            double y = v.y * cos - v.z * sin;
-            double z = v.y * sin + v.z * cos;
-            v.y = y;
-            v.z = z;
-        }
-    }
-
-    public void scale(double sx, double sy, double sz) {
-        for (Vertex v : vertices) {
-            v.x *= sx;
-            v.y *= sy;
-            v.z *= sz;
+    private void updateVertices() {
+        for (int i = 0; i < vertices.size(); i++) {
+            Vertex original = originalVertices.get(i);
+            Vertex transformed = transformationMatrix.transform(original);
+            vertices.set(i, transformed);
         }
     }
 }

@@ -5,10 +5,10 @@ import com.marcinjanczak.utlis.MeshLoader;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 
 public class MainFrame extends JFrame {
+    private MenuBar menuBar;
     private Mesh3D mesh;
     private RenderPanel renderPanel;
     private double observerDistance = 5.0;
@@ -26,6 +26,8 @@ public class MainFrame extends JFrame {
         // Panel do renderowania
         renderPanel = new RenderPanel();
         add(renderPanel, BorderLayout.CENTER);
+
+        menuBar = new MenuBar();
 
         // Panel kontrolny
         JPanel controlPanel = new JPanel(new GridLayout(0, 2));
@@ -60,19 +62,19 @@ public class MainFrame extends JFrame {
         transformPanel.add(tzField);
 
         JButton translateButton = new JButton("Przesuń");
-        translateButton.addActionListener(e -> {
-            try {
-                double tx = Double.parseDouble(txField.getText());
-                double ty = Double.parseDouble(tyField.getText());
-                double tz = Double.parseDouble(tzField.getText());
-                if (mesh != null) {
-                    mesh.translate(tx, ty, tz);
-                    renderPanel.repaint();
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości");
-            }
-        });
+//        translateButton.addActionListener(e -> {
+//            try {
+//                double tx = Double.parseDouble(txField.getText());
+//                double ty = Double.parseDouble(tyField.getText());
+//                double tz = Double.parseDouble(tzField.getText());
+//                if (mesh != null) {
+//                    mesh.translate(tx, ty, tz);
+//                    renderPanel.repaint();
+//                }
+//            } catch (NumberFormatException ex) {
+//                JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości");
+//            }
+//        });
 
         // Dodawanie komponentów
         controlPanel.add(loadButton);
@@ -83,6 +85,8 @@ public class MainFrame extends JFrame {
         controlPanel.add(translateButton);
 
         add(controlPanel, BorderLayout.SOUTH);
+
+        setJMenuBar(menuBar);
     }
 
     private void loadMesh() {
