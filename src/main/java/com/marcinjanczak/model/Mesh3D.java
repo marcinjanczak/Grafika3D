@@ -53,4 +53,11 @@ public class Mesh3D {
             vertices.set(i, transformed);
         }
     }
+    public void translate(double tx, double ty, double tz) {
+        for (Vertex v : vertices) {
+            v.x += tx;
+            v.y += ty;
+            v.z += tz;
+        }
+    }
 }
