@@ -3,8 +3,6 @@ package com.marcinjanczak.controller;
 import com.marcinjanczak.model.Matrix4x4;
 import com.marcinjanczak.model.Mesh3D;
 
-
-
 public class TransformationController {
     private Matrix4x4 transformationMatrix;
 
@@ -43,5 +41,9 @@ public class TransformationController {
 
     public void reset() {
         transformationMatrix = Matrix4x4.identity();
+    }
+
+    public Matrix4x4 getTransformationMatrix() {
+        return transformationMatrix;
     }
 }

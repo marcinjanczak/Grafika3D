@@ -1,15 +1,20 @@
 package com.marcinjanczak.views;
 
+import com.marcinjanczak.controller.TransformationController;
+import com.marcinjanczak.model.Face;
 import com.marcinjanczak.model.Mesh3D;
+import com.marcinjanczak.model.Vertex;
 import com.marcinjanczak.utlis.MeshLoader;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 
 public class MainFrame extends JFrame {
     private MenuBar menuBar;
     private Mesh3D mesh;
+    private TransformationController transformationController;
     private double observerDistance = 5.0;
 
 
@@ -17,15 +22,16 @@ public class MainFrame extends JFrame {
     private JScrollPane meshInfoScrollPane;
 
     private RenderPanel renderPanel;
-    private JPanel pointsArea;
+    private JPanel infoPanel;
     private JPanel transformPanel;
-    private JPanel controlPanel;
 
+    private JPanel matrixPanel;
+    private JLabel[] matrixLabels;
+    private JButton refreshMatrixBtn;
 
     JButton translateButton;
     JButton scaleButton;
     JButton rotateButton;
-
 
     JTextField rotateXfield;
     JTextField rotateYfield;
@@ -76,17 +82,16 @@ public class MainFrame extends JFrame {
         gbc.gridheight = 9;
         gbc.weightx = 0.10;
         gbc.weighty = 0.9;
-        pointsArea = new JPanel();
 
+
+        infoPanel = getInfoPanel();
         gbc.gridx = 9;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 9;
         gbc.weightx = 0.10;
         gbc.weighty = 0.9;
-        add(pointsArea, gbc);
-
-
+        add(infoPanel, gbc);
 
         transformPanel = getTransformPanel();
         gbc.gridx = 0;
@@ -97,18 +102,67 @@ public class MainFrame extends JFrame {
         gbc.weighty = 0.1;
         add(transformPanel, gbc);
 
-//        controlPanel = getControllPanel();
+//        matrixPanel = getMatrixPanel();
 //        gbc.gridx = 9;
 //        gbc.gridy = 9;
 //        gbc.gridwidth = 1; // 1/4 szerokości
 //        gbc.gridheight = 1; // 1/4 wysokości
 //        gbc.weightx = 0.1;
 //        gbc.weighty = 0.1;
-//        add(controlPanel, gbc);
+//        add(matrixPanel, gbc);
 
         menuBar = new MenuBar();
         setJMenuBar(menuBar);
     }
+
+    private JPanel getInfoPanel(){
+        JPanel infoPanel = new JPanel();
+        infoPanel.setBorder(BorderFactory.createTitledBorder("Informacje o bryle"));
+        meshInfoArea = new JTextArea();
+        meshInfoArea.setEditable(false);
+        meshInfoArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        JScrollPane scrollPane = new JScrollPane(meshInfoArea);
+        infoPanel.add(scrollPane,BorderLayout.CENTER);
+
+        return infoPanel;
+    }
+    public void updateMeshInfo(Mesh3D mesh) {
+        if (mesh == null) {
+            meshInfoArea.setText("Brak wczytanej bryły");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        // Nagłówek
+        sb.append("=== Wierzchołki ===\n");
+
+        // Wierzchołki
+        List<Vertex> vertices = mesh.getVertices();
+        for (int i = 0; i < vertices.size(); i++) {
+            Vertex v = vertices.get(i);
+            sb.append(String.format("%2d: [%6.2f, %6.2f, %6.2f]\n",
+                    i, v.x, v.y, v.z));
+        }
+
+        // Separator
+        sb.append("\n=== Ściany ===\n");
+
+        // Ściany
+        List<Face> faces = mesh.getFaces();
+        for (int i = 0; i < faces.size(); i++) {
+            Face f = faces.get(i);
+            sb.append(String.format("%2d: ", i));
+            for (int vertexIndex : f.getVertexIndices()) {
+                sb.append(String.format("%2d ", vertexIndex));
+            }
+            sb.append("\n");
+        }
+
+        meshInfoArea.setText(sb.toString());
+    }
+
 
     private JPanel getTransformPanel() {
         transformPanel = new JPanel(new GridLayout(4, 4, 5, 5));
@@ -155,6 +209,35 @@ public class MainFrame extends JFrame {
 
         return transformPanel;
     }
+//    private JPanel getMatrixPanel(){
+//        JPanel panel = new JPanel(new GridLayout());
+//        panel.setBorder(BorderFactory.createTitledBorder("Macierz transformacji 4x4"));
+//
+//
+//        // Przycisk odświeżania
+//        refreshMatrixBtn = new JButton("Odśwież macierz");
+//        refreshMatrixBtn.addActionListener(e -> updateMatrixDisplay());
+//        panel.add(refreshMatrixBtn);
+//
+//        return panel;
+//    }
+//
+//    private void updateMatrixDisplay() {
+//        if (transformationController == null) return;
+//
+//        Matrix4x4 matrix = transformationController.getTransformationMatrix();
+//        DecimalFormat df = new DecimalFormat(" 0.000;-0.000");
+//
+//        for (int i = 0; i < 4; i++) {
+//            StringBuilder row = new StringBuilder("[");
+//            for (int j = 0; j < 4; j++) {
+//                row.append(df.format(matrix.get(i, j)));
+//                if (j < 3) row.append(",");
+//            }
+//            row.append("]");
+//            matrixLabels[i].setText(row.toString());
+//        }
+//    }
 
     private void loadMesh() {
         JFileChooser fileChooser = new JFileChooser();
@@ -162,6 +245,7 @@ public class MainFrame extends JFrame {
             try {
                 mesh = MeshLoader.loadFromFile(fileChooser.getSelectedFile());
                 renderPanel.setMesh(mesh);
+                updateMeshInfo(mesh);
                 renderPanel.setObserverDistance(observerDistance);
                 renderPanel.repaint();
             } catch (IOException e) {
@@ -198,6 +282,23 @@ public class MainFrame extends JFrame {
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości");
+            }
+        });
+        scaleButton.addActionListener(e -> {
+            try {
+                double sx = Double.parseDouble(scaleXField.getText());
+                double sy = Double.parseDouble(scaleYField.getText());
+                double sz = Double.parseDouble(scaleZField.getText());
+
+                if (mesh != null) {
+                    transformationController.applyScaling(sx, sy, sz);
+                    mesh.applyTransformation(transformationController.getTransformationMatrix());
+//                    updateMatrixDisplay();
+                    renderPanel.repaint();
+//                    updateMeshInfo();
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości skalowania");
             }
         });
 
