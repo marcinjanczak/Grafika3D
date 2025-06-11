@@ -115,7 +115,7 @@ public class MainFrame extends JFrame {
         setJMenuBar(menuBar);
     }
 
-    private JPanel getInfoPanel(){
+    private JPanel getInfoPanel() {
         JPanel infoPanel = new JPanel();
         infoPanel.setBorder(BorderFactory.createTitledBorder("Informacje o bryle"));
         meshInfoArea = new JTextArea();
@@ -123,10 +123,11 @@ public class MainFrame extends JFrame {
         meshInfoArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 
         JScrollPane scrollPane = new JScrollPane(meshInfoArea);
-        infoPanel.add(scrollPane,BorderLayout.CENTER);
+        infoPanel.add(scrollPane, BorderLayout.CENTER);
 
         return infoPanel;
     }
+
     public void updateMeshInfo(Mesh3D mesh) {
         if (mesh == null) {
             meshInfoArea.setText("Brak wczytanej bryły");
@@ -162,7 +163,6 @@ public class MainFrame extends JFrame {
 
         meshInfoArea.setText(sb.toString());
     }
-
 
     private JPanel getTransformPanel() {
         transformPanel = new JPanel(new GridLayout(4, 4, 5, 5));
