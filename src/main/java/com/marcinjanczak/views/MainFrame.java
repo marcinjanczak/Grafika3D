@@ -10,14 +10,18 @@ import java.io.IOException;
 public class MainFrame extends JFrame {
     private MenuBar menuBar;
     private Mesh3D mesh;
-    private RenderPanel renderPanel;
     private double observerDistance = 5.0;
+
+    private RenderPanel renderPanel;
+    private JPanel pointsArea;
+    private JPanel transformPanel;
+    private JPanel controlPanel;
 
     public MainFrame() {
         setTitle("Grafika 3D - Projekt");
-        setSize(800, 600);
+        setLayout(new GridBagLayout());
+        setSize(1500, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
 
         initComponents();
     }
@@ -25,20 +29,64 @@ public class MainFrame extends JFrame {
     private void initComponents() {
         // Panel do renderowania
         renderPanel = new RenderPanel();
-        add(renderPanel, BorderLayout.CENTER);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 9;
+        gbc.gridheight = 9;
+        gbc.weightx = 0.9;
+        gbc.weighty = 0.9;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+
+        add(renderPanel, gbc);
+
+
+        pointsArea = new JPanel();
+
+        gbc.gridx = 9;
+        gbc.gridy = 0;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 9;
+        gbc.weightx = 0.10;
+        gbc.weighty = 0.9;
+        add(pointsArea, gbc);
+        transformPanel = getTransformPanel();
+
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        gbc.gridwidth = 9; // 3/4 szerokości
+        gbc.gridheight = 1; // 1/4 wysokości
+        gbc.weightx = 0.9;
+        gbc.weighty = 0.1;
+        add(transformPanel, gbc);
+
+
+
+        controlPanel = getControllPanel();
+        gbc.gridx = 9;
+        gbc.gridy = 9;
+        gbc.gridwidth = 1; // 1/4 szerokości
+        gbc.gridheight = 1; // 1/4 wysokości
+        gbc.weightx = 0.1;
+        gbc.weighty = 0.1;
+        add(controlPanel, gbc);
 
         menuBar = new MenuBar();
-
-        // Panel kontrolny
-        JPanel controlPanel = new JPanel(new GridLayout(0, 2));
-
-        // Przyciski i kontrolki
+        setJMenuBar(menuBar);
+    }
+    private JPanel getControllPanel(){
+        JPanel controlPanel = new JPanel(new GridLayout(0, 3));
         JButton loadButton = new JButton("Wczytaj bryłę");
         loadButton.addActionListener(e -> loadMesh());
 
         JLabel distLabel = new JLabel("Odległość obserwatora:");
         JTextField distField = new JTextField(String.valueOf(observerDistance));
         JButton distButton = new JButton("Ustaw");
+
+
         distButton.addActionListener(e -> {
             try {
                 observerDistance = Double.parseDouble(distField.getText());
@@ -49,10 +97,18 @@ public class MainFrame extends JFrame {
             }
         });
 
-        // Transformacje
-        JPanel transformPanel = new JPanel(new GridLayout(3, 3));
+        controlPanel.add(loadButton);
+        controlPanel.add(distLabel);
+        controlPanel.add(distField);
+        controlPanel.add(distButton);
+//        controlPanel.add(transformPanel);
+//        controlPanel.add(translateButton);
+//
 
-        // Przesunięcie
+        return controlPanel;
+    }
+    private JPanel getTransformPanel(){
+        transformPanel = new JPanel(new GridLayout(3, 3));
         transformPanel.add(new JLabel("Przesunięcie:"));
         JTextField txField = new JTextField("0");
         JTextField tyField = new JTextField("0");
@@ -60,33 +116,21 @@ public class MainFrame extends JFrame {
         transformPanel.add(txField);
         transformPanel.add(tyField);
         transformPanel.add(tzField);
-
         JButton translateButton = new JButton("Przesuń");
-//        translateButton.addActionListener(e -> {
-//            try {
-//                double tx = Double.parseDouble(txField.getText());
-//                double ty = Double.parseDouble(tyField.getText());
-//                double tz = Double.parseDouble(tzField.getText());
-//                if (mesh != null) {
+        translateButton.addActionListener(e -> {
+            try {
+                double tx = Double.parseDouble(txField.getText());
+                double ty = Double.parseDouble(tyField.getText());
+                double tz = Double.parseDouble(tzField.getText());
+                if (mesh != null) {
 //                    mesh.translate(tx, ty, tz);
-//                    renderPanel.repaint();
-//                }
-//            } catch (NumberFormatException ex) {
-//                JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości");
-//            }
-//        });
-
-        // Dodawanie komponentów
-        controlPanel.add(loadButton);
-        controlPanel.add(distLabel);
-        controlPanel.add(distField);
-        controlPanel.add(distButton);
-        controlPanel.add(transformPanel);
-        controlPanel.add(translateButton);
-
-        add(controlPanel, BorderLayout.SOUTH);
-
-        setJMenuBar(menuBar);
+                    renderPanel.repaint();
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości");
+            }
+        });
+        return transformPanel;
     }
 
     private void loadMesh() {
