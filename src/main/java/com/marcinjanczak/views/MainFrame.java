@@ -16,7 +16,7 @@ public class MainFrame extends JFrame {
     private MenuBar menuBar;
     private Mesh3D mesh;
     private TransformationController transformationController;
-    private double observerDistance = 5.0;
+    private double observerDistance = 500;
 
     private JTextArea meshInfoArea;
 

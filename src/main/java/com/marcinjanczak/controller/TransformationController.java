@@ -33,7 +33,7 @@ public class TransformationController {
     }
 
     public void applyScaling(double sx, double sy, double sz) {
-        Matrix4x4 scalingMatrix = Matrix4x4.scaling(sx, sy, sz);
+        Matrix4x4 scalingMatrix = Matrix4x4.identity().scale(sx, sy, sz);
         transformationMatrix = transformationMatrix.multiply(scalingMatrix);
     }
 

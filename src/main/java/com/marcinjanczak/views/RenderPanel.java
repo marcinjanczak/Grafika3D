@@ -49,7 +49,7 @@ public class RenderPanel extends JPanel {
 
         int centerX = getWidth() / 2;
         int centerY = getHeight() / 2;
-        int scale = 100;
+        int scale = 1;
 
         drawCoordinateSystem(g2d, centerX, centerY, scale);
         drawMesh(g2d, centerX, centerY, scale);
