@@ -2,6 +2,7 @@ package com.marcinjanczak.views;
 
 import com.marcinjanczak.controller.TransformationController;
 import com.marcinjanczak.model.Face;
+import com.marcinjanczak.model.Matrix4x4;
 import com.marcinjanczak.model.Mesh3D;
 import com.marcinjanczak.model.Vertex;
 import com.marcinjanczak.utlis.MeshLoader;
@@ -17,17 +18,14 @@ public class MainFrame extends JFrame {
     private TransformationController transformationController;
     private double observerDistance = 5.0;
 
-
     private JTextArea meshInfoArea;
-    private JScrollPane meshInfoScrollPane;
 
     private RenderPanel renderPanel;
     private JPanel infoPanel;
     private JPanel transformPanel;
 
     private JPanel matrixPanel;
-    private JLabel[] matrixLabels;
-    private JButton refreshMatrixBtn;
+    private JTextArea matrixTextArea;
 
     JButton translateButton;
     JButton scaleButton;
@@ -55,7 +53,9 @@ public class MainFrame extends JFrame {
         setSize(1500, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+
         initComponents();
+        transformationController = new TransformationController();
         acctionListeners();
     }
 
@@ -102,14 +102,14 @@ public class MainFrame extends JFrame {
         gbc.weighty = 0.1;
         add(transformPanel, gbc);
 
-//        matrixPanel = getMatrixPanel();
-//        gbc.gridx = 9;
-//        gbc.gridy = 9;
-//        gbc.gridwidth = 1; // 1/4 szerokości
-//        gbc.gridheight = 1; // 1/4 wysokości
-//        gbc.weightx = 0.1;
-//        gbc.weighty = 0.1;
-//        add(matrixPanel, gbc);
+        matrixPanel = getMatrixPanel();
+        gbc.gridx = 9;
+        gbc.gridy = 9;
+        gbc.gridwidth = 1; // 1/4 szerokości
+        gbc.gridheight = 1; // 1/4 wysokości
+        gbc.weightx = 0.1;
+        gbc.weighty = 0.1;
+        add(matrixPanel, gbc);
 
         menuBar = new MenuBar();
         setJMenuBar(menuBar);
@@ -133,7 +133,6 @@ public class MainFrame extends JFrame {
             meshInfoArea.setText("Brak wczytanej bryły");
             return;
         }
-
         StringBuilder sb = new StringBuilder();
 
         // Nagłówek
@@ -166,6 +165,7 @@ public class MainFrame extends JFrame {
 
     private JPanel getTransformPanel() {
         transformPanel = new JPanel(new GridLayout(4, 4, 5, 5));
+        transformPanel.setBorder(BorderFactory.createTitledBorder("Transformacje"));
 
         translateButton = new JButton("Przesuń");
         txField = new JTextField("0");
@@ -207,37 +207,49 @@ public class MainFrame extends JFrame {
         transformPanel.add(new JLabel(""));
 
 
+
+
         return transformPanel;
     }
-//    private JPanel getMatrixPanel(){
-//        JPanel panel = new JPanel(new GridLayout());
-//        panel.setBorder(BorderFactory.createTitledBorder("Macierz transformacji 4x4"));
-//
-//
-//        // Przycisk odświeżania
-//        refreshMatrixBtn = new JButton("Odśwież macierz");
-//        refreshMatrixBtn.addActionListener(e -> updateMatrixDisplay());
-//        panel.add(refreshMatrixBtn);
-//
-//        return panel;
-//    }
-//
-//    private void updateMatrixDisplay() {
-//        if (transformationController == null) return;
-//
-//        Matrix4x4 matrix = transformationController.getTransformationMatrix();
-//        DecimalFormat df = new DecimalFormat(" 0.000;-0.000");
-//
-//        for (int i = 0; i < 4; i++) {
-//            StringBuilder row = new StringBuilder("[");
-//            for (int j = 0; j < 4; j++) {
-//                row.append(df.format(matrix.get(i, j)));
-//                if (j < 3) row.append(",");
-//            }
-//            row.append("]");
-//            matrixLabels[i].setText(row.toString());
-//        }
-//    }
+
+    private JPanel getMatrixPanel() {
+        JPanel panel = new JPanel(new GridLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Macierz przekształceń"));
+
+        matrixTextArea = new JTextArea();
+        matrixTextArea.setEditable(false);
+        matrixTextArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+
+        JScrollPane scrollPane = new JScrollPane(matrixTextArea);
+        panel.add(scrollPane, BorderLayout.CENTER);
+        return panel;
+    }
+
+    //
+    private void updateMatrixDisplay(Matrix4x4 matrix) {
+        if (matrix == null) {
+            matrixTextArea.setText("Brak macierzy przekształceń");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        // Nagłówek
+        sb.append("Aktualna macierz przekształceń:\n\n");
+
+        // Wiersze macierzy
+        for (int i = 0; i < 4; i++) {
+            sb.append("[ ");
+            for (int j = 0; j < 4; j++) {
+                sb.append(String.format("%8.4f", matrix.get(i, j)));
+                if (j < 3) sb.append(", ");
+            }
+            sb.append(" ]\n");
+        }
+
+        matrixTextArea.setText(sb.toString());
+
+    }
 
     private void loadMesh() {
         JFileChooser fileChooser = new JFileChooser();
@@ -277,8 +289,11 @@ public class MainFrame extends JFrame {
                 double ty = Double.parseDouble(tyField.getText());
                 double tz = Double.parseDouble(tzField.getText());
                 if (mesh != null) {
-                    mesh.translate(tx, ty, tz);
+                    transformationController.applyTranslation(tx,ty,tz);
+                    mesh.applyTransformation(transformationController.getTransformationMatrix());
+                    updateMatrixDisplay(transformationController.getTransformationMatrix());
                     renderPanel.repaint();
+                    updateMeshInfo(mesh);
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości");
@@ -293,9 +308,9 @@ public class MainFrame extends JFrame {
                 if (mesh != null) {
                     transformationController.applyScaling(sx, sy, sz);
                     mesh.applyTransformation(transformationController.getTransformationMatrix());
-//                    updateMatrixDisplay();
+                    updateMatrixDisplay(transformationController.getTransformationMatrix());
                     renderPanel.repaint();
-//                    updateMeshInfo();
+                    updateMeshInfo(mesh);
                 }
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości skalowania");

@@ -80,4 +80,8 @@ public class Matrix4x4 {
 
         return new Vertex(x/w, y/w, z/w);
     }
+    public double get(int row, int col) {
+        return m[row][col];
+    }
+
 }
