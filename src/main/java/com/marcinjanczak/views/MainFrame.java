@@ -316,7 +316,22 @@ public class MainFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, "Nieprawidłowe wartości skalowania");
             }
         });
+        rotateButton.addActionListener(e -> {
+            try {
+                double rx = Math.toRadians(Double.parseDouble(rotateXfield.getText()));
+                double ry = Math.toRadians(Double.parseDouble(rotateYfield.getText()));
+                double rz = Math.toRadians(Double.parseDouble(rotateZfield.getText()));
 
-
+                if (mesh != null) {
+                    transformationController.applyRotation(rx,ry,rz);
+                    mesh.applyTransformation(transformationController.getTransformationMatrix());
+                    updateMatrixDisplay(transformationController.getTransformationMatrix());
+                    renderPanel.repaint();
+                    updateMeshInfo(mesh);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this,"Nieprawidłowe wartości rotacji.");
+            }
+        });
     }
 }

@@ -14,20 +14,22 @@ public class TransformationController {
         Matrix4x4 translationMatrix = Matrix4x4.translation(tx, ty, tz);
         transformationMatrix = transformationMatrix.multiply(translationMatrix);
     }
+    public void applyRotation(double rx, double ry, double rz) {
+        if (rx != 0) applyRotationX(rx);
+        if (ry != 0) applyRotationY(ry);
+        if (rz != 0) applyRotationZ(rz);
+    }
 
     public void applyRotationX(double angle) {
-        Matrix4x4 rotationMatrix = Matrix4x4.rotationX(angle);
-        transformationMatrix = transformationMatrix.multiply(rotationMatrix);
+        transformationMatrix = transformationMatrix.multiply(Matrix4x4.rotationX(angle));
     }
 
     public void applyRotationY(double angle) {
-        Matrix4x4 rotationMatrix = Matrix4x4.rotationY(angle);
-        transformationMatrix = transformationMatrix.multiply(rotationMatrix);
+        transformationMatrix = transformationMatrix.multiply(Matrix4x4.rotationY(angle));
     }
 
     public void applyRotationZ(double angle) {
-        Matrix4x4 rotationMatrix = Matrix4x4.rotationZ(angle);
-        transformationMatrix = transformationMatrix.multiply(rotationMatrix);
+        transformationMatrix = transformationMatrix.multiply(Matrix4x4.rotationZ(angle));
     }
 
     public void applyScaling(double sx, double sy, double sz) {
